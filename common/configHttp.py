@@ -36,5 +36,37 @@ class ConfigHttp:
     def set_files(self,file):
         self.files = file
 
-    #defined 
+    #dined http get method
+    def get(self):
+        try:
+            response = requests.get(self.url,params = self.params,headers=self.headers,timeout = floal(timeout))
+            #respones.raise_for_status()
+            return response
+        except TimeoutError:
+            self.logger.error("Time out!")
+            return None
+    #defined hrrp post method
+    def post(self):
+        try:
+            response = requests.get(self.url,params = self.params,headers = self.headers,timeout = float(timeout))
+            #response.rainse_for_status()
+            return response
+        except TimeoutError:
+            self.logger.error("Time out!")
+            return None
+    # defined http post method
+    def post(self):
+        try:
+            response = requests.post(self.url,headers= self.headers,data = self.data,files = self.files, timeout = float(timeout))
+            #response.rains_for_status()
+            return response
+        except TimeoutError:
+            self.logger.error("Time out!")
+            return None
+
+
+
+
+
+
 
