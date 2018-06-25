@@ -4,6 +4,7 @@
 import requests
 import readConfig as readConfig
 from common.Log import MyLog as log
+import json
 
 localReadConfig = readConfig.ReadConfig()
 
@@ -13,7 +14,7 @@ class ConfigHttp:
         host = localReadConfig.get_http("baseurl1")
         port = localReadConfig.get_http("port")
         timeout = localReadConfig.get_http("timeout")
-        self.log = Log.get_log()
+        self.log = log.get_log()
         self.logger = self.log.get_logger()
         self.headers = {}
         self.params = {}
@@ -63,6 +64,9 @@ class ConfigHttp:
         except TimeoutError:
             self.logger.error("Time out!")
             return None
+
+if __name__ == "__name__":
+    print ("ConfigHTTP")
 
 
 

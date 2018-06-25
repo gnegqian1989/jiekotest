@@ -1,19 +1,77 @@
 #!/usr/bin/python
 #coading:utf-8
+import requests
+import readConfig as readConfig
 import os
 from xlrd import open_workbook
 from xml.etree import ElementTree as ElementTree
 from common.Log import MyLog as log
+from common import configHttp as configHttp
+import json
 
+localReadConfig = readConfig.ReadConfig()
+proDir = readConfig.proDir
 localConfigHttp = configHttp.ConfigHttp()
-log = Log.get_log()
+log = log.get_log()
 logger = log.get_logger()
 
+caseNo = 0
+
+
+def get_visitor_token():
+    """
+    create a token for visitor
+    :return:
+    """
+    host = localReadConfig.get_http("BASEURL")
+    response = requests.get(host+"/v2/User/Token/generate")
+    info =response.json()
+    token = info.get("info")
+    logger.debug("Create token:%s" % (token))
+    return token
+
+
+def set_visitor_token_to_config():
+    """
+    set token that created for visitor to config
+    :return:
+    """
+    token_v = get_visitor_token()
+    localReadConfig.set_headers("TOKEN_V",token_v)
+
+def get_value_from_return_json(json,name1,name2):
+    """
+    get value by key
+    :param json:
+    :param name1:
+    :param name2:
+    :return:
+    """
+
+    info = json['info']
+    group = info[name1]
+    value = group[name2]
+    return value
+
+def show_ruturn_msg(response):
+    """
+    show msg detail
+    :param response:
+    :return:
+    """
+    url = response.url
+    msg = response.text
+    print("\n请求地址：" +url)
+    #可以显示中文
+    print("\n请求返回值：" +'\n' +json.dumps(json.loads(msg),ensure_ascii = False,sort_keys=True,indent=4))
+
+
+# ****************************** read testCase excel ********************************
 #从excel中读取测试用例
 def get_xls(xls_name,sheet_name):
     cls = []
     #get xls file's path
-    xlspath = os.path.join(proDir,"testFile",xls_name)
+    xlsPath = os.path.join(proDir,"testFile",xls_name)
     #open xls file
     file = open_workbook(xlsPath)
     #get sheet by name
@@ -25,10 +83,13 @@ def get_xls(xls_name,sheet_name):
             cls.append(sheet.row_values(i))
     return cls
 
+
+# ****************************** read SQL xml ********************************
 #从xml文件中读取sql语句
 database = {}
+
 def set_xml():
-    if len(databases) == 0:
+    if len(database) == 0:
         sql_path = os.path.join(proDir,"testFile","SQL.xml")
         tree = ElementTree.parse(sql_path)
         for db in tree.findall("database"):
@@ -44,18 +105,20 @@ def set_xml():
                     print(sql_id)
                     sql[sql_id] = data.text
                 table[table_name] = sql
-            database[dn_name] = table
+            database[db_name] = table
 
-    def get_xml_dict(databases_name,table_name):
+
+    def get_xml_dict(database_name,table_name):
         set_xml()
-        database_dict = databases.get(database_name).get(table_name)
-        return databases_dict
+        database_dict = database.get(database_name).get(table_name)
+        return database_dict
 
     def get_sql(database_name, table_name, sql_id):
         db = get_xml_dict(database_name,table_name)
         sql = db.get(sql_id)
         return sql
 
+# ****************************** read interfaceURL xml ********************************
 
 
 
